@@ -1,7 +1,13 @@
+from multiprocessing import Pool
+
 import pandas as pd
 import numpy as np
-import re
 
+import re
+import os
+import time
+
+data = pd.read_csv('../data/data.csv')
 words_indexes = pd.read_csv('../data/words_indexes.csv')
 
 
@@ -64,26 +70,38 @@ def get_categories_probabilities(text):
 def get_category(text):
     probs = get_categories_probabilities(text)
     rounded_probs = [round(prob, 4) for prob in probs]
-    print(f'Probabilities: {rounded_probs}')
+    print(rounded_probs)
     if max(probs) > 0.45:
         return convert_index_to_answer(probs.index(max(probs)))
     else:
         return 'Дети'
 
 
-if __name__ == '__main__':
-    df = pd.read_csv('../data/data.csv')
-    n = 100
+def evaluate_sample(i):
+    predicted = get_category(data['Article Text'][i])
+    real = data['Category'][i]
+    return predicted == real
 
+
+def test(n=50):
     correct = 0
     all = 0
-    for i in [np.random.randint(0, len(df)) for _ in range(n)]:
-        predicted = get_category(df['Article Text'][i])
-        real = df['Category'][i]
-        print(f'Predicted: {predicted}, Real: {real}')
-        all += 1
-        if (predicted == real):
-            correct += 1
 
-        if all % 5 == 0:
-            print(f'Accuracy: {correct/all}')
+    indices = [np.random.randint(0, len(data)) for _ in range(n)]
+
+    with Pool(os.cpu_count()) as p:
+        results = p.map(evaluate_sample, indices)
+
+    for result in results:
+        all += 1
+        correct += result
+
+    return [correct, all]
+
+if __name__ == '__main__':
+    n = 5 * 12
+    start = time.time()
+    print(test(n))
+    end = time.time()
+    print(f"Time: {end - start}")
+    print(f"Time per sample: {(end - start) / n}")
