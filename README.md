@@ -1,0 +1,1 @@
+# hackathon-VK-HSE-20-04-2024
