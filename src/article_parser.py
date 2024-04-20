@@ -15,4 +15,4 @@ for sheet, category in sheet_to_category.items():
     df["Text"] = df["Article Text"]
     df = df[["Class", "Title", "Description", "Text"]]
     out = pd.concat([out, df])
-out.to_csv("data_processed.csv")
+out.to_csv("data_processed.csv", index=False)

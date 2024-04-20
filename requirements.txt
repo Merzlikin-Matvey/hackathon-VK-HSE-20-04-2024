@@ -1,4 +1,0 @@
-tensorflow
-transformers
-tf-keras
-sentencepiece
