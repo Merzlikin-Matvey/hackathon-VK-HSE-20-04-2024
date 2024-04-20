@@ -68,18 +68,30 @@ def get_categories_probabilities(text):
 
 
 def get_category(text):
-    probs = get_categories_probabilities(text)
-    rounded_probs = [round(prob, 4) for prob in probs]
-    print(rounded_probs)
-    if max(probs) > 0.4:
-        return convert_index_to_answer(probs.index(max(probs)))
+    df = get_most_important_words(text)
+
+    top_5 = df.head(5)
+    values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
+
+    if max(values_5) > 0.7:
+        return convert_index_to_answer(values_5.index(max(values_5)))
     else:
-        return 'Дети'
+        tmp = 0
+        for i in range(5):
+            if top_5['Дети'].iloc[i] > 0.85:
+                tmp += 2
+        if tmp >= 2:
+            return 'Дети'
+        else:
+            top_20 = df.head()
+            values_20 = [top_20['Дети'].mean(), top_20['Дом'].mean(), top_20['Здоровье'].mean(), top_20['Кино'].mean()]
+            return convert_index_to_answer(values_20.index(max(values_20)))
 
 
 def evaluate_sample(i):
     predicted = get_category(data['Article Text'][i])
     real = data['Category'][i]
+    print(f"Predicted: {predicted}, Real: {real}")
     return predicted == real
 
 
@@ -95,14 +107,20 @@ def test(n=50):
     for result in results:
         all += 1
         correct += result
+        if correct != 0:
+            print(f"Accuracy: {correct / all}")
+        else:
+            print(f"Accuracy: 0")
 
     return [correct, all]
 
 
 if __name__ == '__main__':
-    n = 5 * 12
+    n = 10 * 12
     start = time.time()
-    print(test(n))
+    results = test(n)
+    print(results)
     end = time.time()
     print(f"Time: {end - start}")
     print(f"Time per sample: {(end - start) / n}")
+    print(f"Accuracy: {results[0] / results[1]}")
