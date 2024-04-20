@@ -1,4 +1,7 @@
 from multiprocessing import Pool
+from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.preprocessing import LabelBinarizer
+from tqdm import tqdm
 
 import pandas as pd
 import numpy as np
@@ -59,14 +62,6 @@ def get_most_important_words(text):
     return df
 
 
-def get_categories_probabilities(text):
-    df = get_most_important_words(text)
-
-    top_5 = df.head(5)
-    values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
-    return values_5
-
-
 def get_category(text):
     df = get_most_important_words(text)
 
@@ -91,36 +86,42 @@ def get_category(text):
 def evaluate_sample(i):
     predicted = get_category(data['Article Text'][i])
     real = data['Category'][i]
-    print(f"Predicted: {predicted}, Real: {real}")
-    return predicted == real
+    return predicted, real
 
 
 def test(n=50):
-    correct = 0
-    all = 0
+    y_true = []
+    y_pred = []
 
     indices = [np.random.randint(0, len(data)) for _ in range(n)]
 
     with Pool(os.cpu_count()) as p:
-        results = p.map(evaluate_sample, indices)
+        for predicted, real in tqdm(p.imap(evaluate_sample, indices), total=n):
+            y_pred.append(predicted)
+            y_true.append(real)
 
-    for result in results:
-        all += 1
-        correct += result
-        if correct != 0:
-            print(f"Accuracy: {correct / all}")
-        else:
-            print(f"Accuracy: 0")
 
-    return [correct, all]
+    f1 = f1_score(y_true, y_pred, average='weighted')
+
+    accuracy = sum([1 for i in range(n) if y_true[i] == y_pred[i]]) / n
+
+    lb = LabelBinarizer()
+    y_true = lb.fit_transform(y_true)
+    y_pred = lb.transform(y_pred)
+    auc = roc_auc_score(y_true, y_pred, average='weighted', multi_class='ovr')
+
+    return accuracy, f1, auc
 
 
 if __name__ == '__main__':
-    n = 10 * 12
+    n = 10 * os.cpu_count()
+    print(f"Testing on {n} samples")
+    print(f"Number of CPU: {os.cpu_count()}")
     start = time.time()
-    results = test(n)
-    print(results)
+    accuracy, f1, auc = test(n)
+    print(f"Accuracy: {accuracy}")
+    print(f"F1 Score: {f1}")
+    print(f"AUC Score: {auc}")
     end = time.time()
     print(f"Time: {end - start}")
     print(f"Time per sample: {(end - start) / n}")
-    print(f"Accuracy: {results[0] / results[1]}")
