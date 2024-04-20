@@ -71,7 +71,7 @@ def get_category(text):
     probs = get_categories_probabilities(text)
     rounded_probs = [round(prob, 4) for prob in probs]
     print(rounded_probs)
-    if max(probs) > 0.45:
+    if max(probs) > 0.4:
         return convert_index_to_answer(probs.index(max(probs)))
     else:
         return 'Дети'
@@ -97,6 +97,7 @@ def test(n=50):
         correct += result
 
     return [correct, all]
+
 
 if __name__ == '__main__':
     n = 5 * 12
