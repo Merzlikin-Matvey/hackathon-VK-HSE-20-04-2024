@@ -10,8 +10,13 @@ import re
 import os
 import time
 
-DATA = pd.read_csv('../data/data.csv')
-WORDS_INDEXES = pd.read_csv('../data/WORDS_INDEXES.csv').set_index('word').T.to_dict('list')
+if os.path.exists('data/data.csv'):
+    DATA = pd.read_csv('data/data.csv')
+    WORDS_INDEXES = pd.read_csv('data/WORDS_INDEXES.csv').set_index('word').T.to_dict('list')
+else:
+    DATA = pd.read_csv('../data/data.csv')
+    WORDS_INDEXES = pd.read_csv('../data/WORDS_INDEXES.csv').set_index('word').T.to_dict('list')
+
 
 DATA_SIZE = len(DATA)
 
@@ -63,26 +68,17 @@ def get_most_important_words(text):
     df = df.sort_values(by='max_value', ascending=False)
     return df
 
-
 def get_category(text):
     df = get_most_important_words(text)
 
-    top_5 = df.head(5)
-    values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
-
-    if max(values_5) > 0.7:
-        return convert_index_to_answer(values_5.index(max(values_5)))
+    if len(df) <= 10:
+        top_5 = df.head(5)
+        values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
+        return convert_index_to_answer(np.argmax(values_5))
     else:
-        tmp = 0
-        for i in range(5):
-            if top_5['Дети'].iloc[i] > 0.85:
-                tmp += 2
-        if tmp >= 2:
-            return 'Дети'
-        else:
-            top_20 = df.head()
-            values_20 = [top_20['Дети'].mean(), top_20['Дом'].mean(), top_20['Здоровье'].mean(), top_20['Кино'].mean()]
-            return convert_index_to_answer(values_20.index(max(values_20)))
+        pass
+
+
 
 
 def evaluate_sample(i):
@@ -117,15 +113,3 @@ def test(n=60, category=None):
     return accuracy, f1, auc
 
 
-if __name__ == '__main__':
-    n = 30 * os.cpu_count()
-    print(f"Testing on {n} samples")
-    print(f"Number of CPU: {os.cpu_count()}")
-    start = time.time()
-    accuracy, f1, auc = test(n)
-    print(f"Accuracy: {accuracy}")
-    print(f"F1 Score: {f1}")
-    print(f"AUC Score: {auc}")
-    end = time.time()
-    print(f"Time: {end - start}")
-    print(f"Time per sample: {(end - start) / n}")
