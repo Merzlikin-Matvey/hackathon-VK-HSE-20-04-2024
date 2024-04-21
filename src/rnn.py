@@ -18,9 +18,8 @@ class NeuralNetwork:
     def __init__(self, model=None):
         if model is None:
             self.model = Sequential()
-            self.model.add(Flatten())
-            self.model.add(Dense(50))  # RNN layer with 50 units
-            self.model.add(Dense(50, activation='relu'))  # Change this line,
+            self.model.add(SimpleRNN(128, input_shape=(4, 10)))
+            self.model.add(Dense(32, activation='relu'))
             self.model.add(Dense(4, activation='softmax'))
             self.model.compile(optimizer='adam', loss='categorical_crossentropy')  # And this line
         else:

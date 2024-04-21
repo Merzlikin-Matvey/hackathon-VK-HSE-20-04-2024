@@ -91,7 +91,7 @@ def get_category(text):
     X_sample =np.array( [df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
     X_sample = X_sample.reshape(1, 4, 10)
     prediction = MODEL.predict(X_sample)
-    print(prediction)
+    print(X_sample, prediction)
     return convert_index_to_answer(np.argmax(prediction))
 
 
@@ -105,11 +105,14 @@ def test(n=60, category=None):
     global data
     y_true = []
     y_pred = []
+    model = NeuralNetwork()
+    model.load("model.keras")
+    MODEL = model
 
     indices = [np.random.randint(0, DATA_SIZE) for _ in range(n)]
-
+    print(get_category("Фильм на вечер фильм катастрофа с неожиданным финалом очень большой взрыв который учит наслаждаться моментом"))
     with Pool(os.cpu_count()) as p:
-        for predicted, real in tqdm(p.imap(evaluate_sample, indices), total=n):
+        for predicted, real in tqdm(p.imap(evaluate_sample, indices, n), total=n):
             y_pred.append(predicted)
             y_true.append(real)
 

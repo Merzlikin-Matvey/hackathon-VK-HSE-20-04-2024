@@ -51,8 +51,18 @@ if __name__ == '__main__':
     model = NeuralNetwork()
     for i in range(4):
         model = train(model)
+
     print('Model trained')
     model.save("../model.keras")
     print('Model saved')
+
+    df = get_most_important_words(
+        "Фильм на вечер фильм катастрофа с неожиданным финалом очень большой взрыв который учит наслаждаться моментом")
+    df_10 = df.head(10)
+    X_sample = np.array([df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
+    X_sample = X_sample.reshape(1, 4, 10)
+    prediction = model.predict(X_sample)
+    print(X_sample, prediction)
+    print(convert_index_to_answer(np.argmax(prediction)))
 
 
