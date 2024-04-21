@@ -10,13 +10,29 @@ import re
 import os
 import time
 
+try:
+    from rnn import NeuralNetwork
+except:
+    from src.rnn import NeuralNetwork
+
 if os.path.exists('data/data.csv'):
     DATA = pd.read_csv('data/data.csv')
     WORDS_INDEXES = pd.read_csv('data/WORDS_INDEXES.csv').set_index('word').T.to_dict('list')
+    try:
+        MODEL = NeuralNetwork()
+        MODEL.load("model.keras")
+    except:
+        MODEL = None
+        print("Model not found")
 else:
     DATA = pd.read_csv('../data/data.csv')
     WORDS_INDEXES = pd.read_csv('../data/WORDS_INDEXES.csv').set_index('word').T.to_dict('list')
-
+    try:
+        MODEL = NeuralNetwork()
+        MODEL.load("../model.keras")
+    except:
+        MODEL = None
+        print("Model not found")
 
 DATA_SIZE = len(DATA)
 
@@ -76,9 +92,12 @@ def get_category(text):
         values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
         return convert_index_to_answer(np.argmax(values_5))
     else:
-        pass
-
-
+        df_10 = df.head(10)
+        X = np.array([df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
+        X = X.reshape(1, 4, 10)  # reshape the input to match the expected input shape of the model
+        predicted_num = MODEL.predict(X)
+        print(predicted_num)
+        return 'Дом'
 
 
 def evaluate_sample(i):
@@ -92,14 +111,12 @@ def test(n=60, category=None):
     y_true = []
     y_pred = []
 
-
     indices = [np.random.randint(0, DATA_SIZE) for _ in range(n)]
 
     with Pool(os.cpu_count()) as p:
         for predicted, real in tqdm(p.imap(evaluate_sample, indices), total=n):
             y_pred.append(predicted)
             y_true.append(real)
-
 
     f1 = f1_score(y_true, y_pred, average='weighted')
 
