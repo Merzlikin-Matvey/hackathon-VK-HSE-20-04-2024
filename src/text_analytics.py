@@ -84,20 +84,15 @@ def get_most_important_words(text):
     df = df.sort_values(by='max_value', ascending=False)
     return df
 
+
 def get_category(text):
     df = get_most_important_words(text)
-
-    if len(df) <= 10:
-        top_5 = df.head(5)
-        values_5 = [top_5['Дети'].mean(), top_5['Дом'].mean(), top_5['Здоровье'].mean(), top_5['Кино'].mean()]
-        return convert_index_to_answer(np.argmax(values_5))
-    else:
-        df_10 = df.head(10)
-        X = np.array([df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
-        X = X.reshape(1, 4, 10)  # reshape the input to match the expected input shape of the model
-        predicted_num = MODEL.predict(X)
-        print(predicted_num)
-        return 'Дом'
+    df_10 = df.head(10)
+    X_sample =np.array( [df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
+    X_sample = X_sample.reshape(1, 4, 10)
+    prediction = MODEL.predict(X_sample)
+    print(prediction)
+    return convert_index_to_answer(np.argmax(prediction))
 
 
 def evaluate_sample(i):

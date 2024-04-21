@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import SimpleRNN, Dense, LSTM
+from tensorflow.keras.layers import SimpleRNN, Dense, Flatten
 
 import pandas as pd
 import numpy as np
@@ -18,8 +18,9 @@ class NeuralNetwork:
     def __init__(self, model=None):
         if model is None:
             self.model = Sequential()
-            self.model.add(LSTM(50, input_shape=(4, 10)))  # RNN layer with 50 units
-            self.model.add(Dense(50))  # Change this line,
+            self.model.add(Flatten())
+            self.model.add(Dense(50))  # RNN layer with 50 units
+            self.model.add(Dense(50, activation='relu'))  # Change this line,
             self.model.add(Dense(4, activation='softmax'))
             self.model.compile(optimizer='adam', loss='categorical_crossentropy')  # And this line
         else:

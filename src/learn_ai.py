@@ -2,8 +2,12 @@ import os.path
 
 import numpy as np
 
-from text_analytics import DATA, DATA_SIZE, get_most_important_words, convert_index_to_answer
-from rnn import NeuralNetwork
+try:
+    from text_analytics import DATA, DATA_SIZE, get_most_important_words, convert_index_to_answer
+    from rnn import NeuralNetwork
+except:
+    from src.text_analytics import DATA, DATA_SIZE, get_most_important_words, convert_index_to_answer
+    from src.rnn import NeuralNetwork
 
 
 def get_index_for_category(key):
@@ -36,16 +40,17 @@ def prepare_data_for_nn(num=1000):
     return np.array(X), np.array(y)
 
 
-def train(model, learning_data_size=50000):
+def train(model, learning_data_size=1024*10):
     X, y = prepare_data_for_nn(learning_data_size)
     print(X.shape, y.shape)
-    model.fit(X, y, epochs=50, batch_size=128)
+    model.fit(X, y, epochs=50, batch_size=1024)
     return model
 
 
 if __name__ == '__main__':
     model = NeuralNetwork()
-    model = train(model)
+    for i in range(4):
+        model = train(model)
     print('Model trained')
     model.save("../model.keras")
     print('Model saved')
