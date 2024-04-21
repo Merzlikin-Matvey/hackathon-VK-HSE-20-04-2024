@@ -18,8 +18,8 @@ class NeuralNetwork:
     def __init__(self, model=None):
         if model is None:
             self.model = Sequential()
-            self.model.add(SimpleRNN(128, input_shape=(4, 10)))
-            self.model.add(Dense(32, activation='relu'))
+            self.model.add(SimpleRNN(512, input_shape=(4, 10)))
+            self.model.add(Dense(128, activation='relu'))
             self.model.add(Dense(4, activation='softmax'))
             self.model.compile(optimizer='adam', loss='categorical_crossentropy')  # And this line
         else:
@@ -37,7 +37,5 @@ class NeuralNetwork:
     def save(self, path="../model.keras"):
         self.model.save(path)
 
-    @classmethod
-    def load(cls, path="../model.keras"):
-        model = tf.keras.models.load_model(path)
-        return cls(model)
+    def load(self, path="../model.keras"):
+        self.model = tf.keras.models.load_model(path)

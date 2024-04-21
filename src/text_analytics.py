@@ -109,8 +109,17 @@ def test(n=60, category=None):
     model.load("model.keras")
     MODEL = model
 
+    df = get_most_important_words(
+        "Фильм на вечер фильм катастрофа с неожиданным финалом очень большой взрыв который учит наслаждаться моментом")
+    df_10 = df.head(10)
+    X_sample = np.array([df_10[column].values for column in ['Дети', 'Дом', 'Здоровье', 'Кино']])
+    X_sample = X_sample.reshape(1, 4, 10)
+    prediction = model.predict(X_sample)
+    print(X_sample, prediction)
+    print(convert_index_to_answer(np.argmax(prediction)))
+
     indices = [np.random.randint(0, DATA_SIZE) for _ in range(n)]
-    print(get_category("Фильм на вечер фильм катастрофа с неожиданным финалом очень большой взрыв который учит наслаждаться моментом"))
+
     with Pool(os.cpu_count()) as p:
         for predicted, real in tqdm(p.imap(evaluate_sample, indices, n), total=n):
             y_pred.append(predicted)

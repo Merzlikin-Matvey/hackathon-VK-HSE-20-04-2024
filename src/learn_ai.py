@@ -40,16 +40,16 @@ def prepare_data_for_nn(num=1000):
     return np.array(X), np.array(y)
 
 
-def train(model, learning_data_size=1024*10):
+def train(model, learning_data_size=6000):
     X, y = prepare_data_for_nn(learning_data_size)
     print(X.shape, y.shape)
-    model.fit(X, y, epochs=50, batch_size=1024)
+    model.fit(X, y, epochs=100, batch_size=1500)
     return model
 
 
 if __name__ == '__main__':
     model = NeuralNetwork()
-    for i in range(4):
+    for i in range(6):
         model = train(model)
 
     print('Model trained')
